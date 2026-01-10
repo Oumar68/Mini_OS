@@ -2,7 +2,7 @@
 #define MINI_LIB_H
 
 #define BUF_SIZE 1024
-#define IOBUFFER_SIZE 2048
+#define IOBUFFER_SIZE 4096 //2048
 
 typedef struct MYFILE {
     int fd;

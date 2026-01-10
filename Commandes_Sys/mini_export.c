@@ -28,13 +28,15 @@ int main(int argc, char **argv) {
     }
 
     // 4. Ajouter la nouvelle variable (provenant de argv[1])
-    new_env[count] = argv[1];
-
+    char *new_var = (char *)mini_calloc(mini_strlen(argv[1]) + 1, sizeof(char));
+    mini_strcpy(new_var, argv[1],mini_strlen(argv[1])+1); 
+    
+    new_env[count] = new_var;
     // 5. Terminer par NULL
     new_env[count + 1] = NULL;
 
     environ = new_env;
     
     mini_exit();
-    return 0;
+   
 }

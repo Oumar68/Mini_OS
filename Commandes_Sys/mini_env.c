@@ -11,6 +11,7 @@ int main(){
     int i = 0 ;
     while (envp[i] != NULL){
         mini_printf(envp[i]);
+        mini_printf("\n");
         i++;
     }
     mini_exit();

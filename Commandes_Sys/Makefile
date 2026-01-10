@@ -3,11 +3,11 @@ CFLAGS = -Wall -Wextra -Werror -g
 INCLUDE_PATH = ../
 
 # Sources
-SRC = mini_getenv.c
+SRC = mini_export.c
 OBJ = $(SRC:.c=.o)
 
 # Nom du programme final
-NAME = mini_getenv
+NAME = mini_export
 # Ajouter le répertoire principal pour les includes
 CFLAGS += -I$(INCLUDE_PATH)
 
