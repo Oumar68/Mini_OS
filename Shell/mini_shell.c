@@ -7,6 +7,7 @@
 #include "mini_lib.h"
 
 extern char **environ;
+
 // Fonction pour découper une ligne en arguments
 int mini_split(char *line, char **args) {
     int count = 0;
@@ -71,7 +72,7 @@ void builtin_getenv(char **args) {
         write(2, "Usage: mini_getenv <VAR>\n", 25);
         return;
     }
-    char *val = mini_getenv(args[1]); // Ta fonction que nous avons écrite avant
+    char *val = mini_getenv(args[1]); 
     if (val) {
         mini_printf(val);
         mini_printf("\n");
@@ -126,7 +127,6 @@ void builtin_export(char **args) {
 void execute_command(char *line) {
     int arriere_plan = 0;
     char **args = (char **)mini_calloc(11, sizeof(char *));
-    //char *args[11];
     int num_args = mini_split(line, args);
 
     if (num_args == 0) {
@@ -159,7 +159,6 @@ void execute_command(char *line) {
         arriere_plan = 1;
         args[num_args - 1] = NULL; // On l'enlève pour ne pas le passer à execve
     }
-
     // --- 3. Exécution (Interne ou Externe) ---
     pid_t pid = fork();
     if (pid == -1) {
@@ -168,13 +167,81 @@ void execute_command(char *line) {
         // Dans le fils
         char path[512] = "/home/ewann/Documents/INSA STI 3A/Prog_systeme/TP1/Commandes_Sys/";
         mini_strcat(path, args[0]);
+
+        for (int i = 0; i < num_args; i++) {
+         if (args[i] == NULL) break;
+
+            // --- GESTION DES REDIRECTIONS ---
         
+            // 1. Redirection de sortie en mode ajout (>>)
+            if (mini_strcmp(args[i], ">>") == 0) {
+                if (args[i+1] == NULL) _exit(1); 
+            
+                MYFILE *file = mini_open(args[i+1], 'a');
+                if (file == NULL) { mini_perror("mini_shell"); _exit(1); }
+            
+                dup2(file->fd, STDOUT_FILENO);
+                args[i] = NULL; // On coupe les arguments ici pour execve
+                
+            }
+            // 3. Redirection de sortie (>)
+            else if (mini_strcmp(args[i], ">") == 0) {
+                if (args[i+1] == NULL) _exit(1); 
+            
+                MYFILE *file = mini_open(args[i+1], 'w');
+                if (file == NULL) { mini_perror("mini_shell"); _exit(1); }
+            
+                dup2(file->fd, STDOUT_FILENO);
+                args[i] = NULL; // On coupe les arguments ici pour execve
+                
+            }
+
+            // 2. Redirection d'erreur (2>)
+            else if (mini_strcmp(args[i], "2>") == 0) {
+                if (args[i+1] == NULL) _exit(1);
+                
+                MYFILE *file = mini_open(args[i+1], 'w');
+                if (file == NULL) { mini_perror("mini_shell"); _exit(1); }
+                
+                dup2(file->fd, STDERR_FILENO);
+                args[i] = NULL;
+                
+            }
+
+            // 4. Redirection d'erreur en mode ajout (2>>)
+            else if (mini_strcmp(args[i], "2>>") == 0) {
+                if (args[i+1] == NULL) _exit(1);
+                
+                MYFILE *file = mini_open(args[i+1], 'a');
+                if (file == NULL) { mini_perror("mini_shell"); _exit(1); }
+                
+                dup2(file->fd, STDERR_FILENO);
+                args[i] = NULL;
+
+            }
+            // 5 Redirection d'entree (<)
+             else if (mini_strcmp(args[i], "<") == 0) {
+                if (args[i+1] == NULL) _exit(1);
+
+                MYFILE *file = mini_open(args[i+1], 'r'); // Ouverture en lecture
+                if (file == NULL) {
+                    mini_perror("mini_shell: impossible d'ouvrir le fichier");
+                    _exit(1);
+                }
+
+                dup2(file->fd, STDIN_FILENO); 
+                args[i] = NULL;
+                args[i+1] = NULL;
+            }
+        }
+
         if (execve(path, args, NULL) == -1) {
             mini_perror("Commande introuvable");
             _exit(1);
         }
+        
     } else {
-        // Dans le parent
+    // Dans le parent
         if (arriere_plan) {
             // On n'attend pas ! On affiche juste une info
             mini_printf("[Processus lancé en arrière-plan]\n");
@@ -183,13 +250,28 @@ void execute_command(char *line) {
             waitpid(pid, NULL, 0); 
         }
     }
-
     mini_free(args);
 }
 
 int main() {
     char *buffer = (char *)mini_calloc(1024, sizeof(char));
-    //char buffer[1024];
+    //  Chargement du mini_bashrc
+    MYFILE *rc = mini_open("mini_bashrc", 'r');
+    if (rc != NULL) {
+        char *line_rc = mini_calloc(1024, 1);
+        // On lit le fichier ligne par ligne
+        while (mini_fread(line_rc, 1 , 1024, rc) > 0) {
+            // On exécute la ligne (ex: mini_export PATH=...)
+            execute_command(line_rc);
+            // On vide le buffer pour la ligne suivante
+            mini_memset(line_rc, 0, 1024);
+        }
+        mini_free(line_rc);
+        mini_fclose(rc);
+    }
+    else {
+        mini_perror("mini_shell: impossible d'ouvrir mini_bashrc");
+    }
     while (1) {
         // Affichage du prompt
         write(STDOUT_FILENO, "ewann@mini_shell> ", 18);
@@ -205,6 +287,6 @@ int main() {
     }
     
     mini_free(buffer);
-    mini_exit(); // Ton propre exit
+    mini_exit();
     return 0;
 }
