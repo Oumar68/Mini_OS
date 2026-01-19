@@ -167,3 +167,16 @@ int mini_fputc(MYFILE *file,char c){
     if(write(file->fd,&c,sizeof(c)) <= 0)return -1;
     return(int)c;
 }
+
+size_t free_buffer(){
+    int i = 0 ;
+    size_t total_free = 0;
+    while(i <= descripteurs->index_courant){
+        int somme = 0 ;
+        somme = IOBUFFER_SIZE - descripteurs->tab[i].ind_read;
+        somme += IOBUFFER_SIZE - descripteurs->tab[i].ind_write;
+        total_free += somme;
+        i++;
+    }
+    return total_free;
+}

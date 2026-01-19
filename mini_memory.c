@@ -116,11 +116,31 @@ void *mini_calloc(int size_element, int number_element) {
 
 void mini_free(void *ptr) {
     if (!ptr) return;
+
     struct malloc_element *cur = liste;
+
+    // 1. On cherche le bloc et on le marque comme libre
     while (cur) {
         if (cur->zone == ptr) {
-            cur->statut = false;
-            return;
+            cur->statut = false; 
+            break; 
+        }
+        cur = cur->suivant;
+    }
+    cur = liste;
+    while (cur && cur->suivant) {
+        if (cur->statut == false && cur->suivant->statut == false) {
+            // FUSION DES BLOCS SUCCESSIFS LIBRES
+            struct malloc_element *a_supprimer = cur->suivant;
+            
+            // La nouvelle taille = taille actuelle + taille metadata + taille du bloc suivant
+            cur->taille += sizeof(struct malloc_element) + a_supprimer->taille;
+            
+            // On saute l'élément fusionné en pointant vers le suivant du suivant 
+            cur->suivant = a_supprimer->suivant;
+            
+            //car le nouveau "suivant" est peut-être libre aussi !
+            continue; 
         }
         cur = cur->suivant;
     }
@@ -138,4 +158,16 @@ void mini_exit(void) {
         descripteurs->index_courant = 0;
     }
     _exit(0);
+}
+
+size_t free_memory(){
+    struct malloc_element *cur = liste;
+    size_t taille_libre = 0;
+    while(cur){
+        if(!cur->statut){
+            taille_libre += cur->taille;
+        }
+     cur = cur->suivant;
+    }
+    return taille_libre;
 }

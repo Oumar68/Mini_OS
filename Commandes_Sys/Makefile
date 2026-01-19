@@ -3,11 +3,11 @@ CFLAGS = -Wall -Wextra -Werror -g
 INCLUDE_PATH = ../
 
 # Sources
-SRC = mini_quickdiff.c
+SRC = mini_du.c
 OBJ = $(SRC:.c=.o)
 
 # Nom du programme final
-NAME = mini_quickdiff
+NAME = mini_du
 # Ajouter le répertoire principal pour les includes
 CFLAGS += -I$(INCLUDE_PATH)
 

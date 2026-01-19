@@ -43,5 +43,7 @@ int find_word(const char *str, const char *word);
 int mini_strcmp(const char *s1, const char *s2);
 void mini_memset(void *s, int c, size_t n);
 void mini_strcat(char *dest, const char *src);
+size_t free_memory();
+size_t free_buffer();
 
 #endif
