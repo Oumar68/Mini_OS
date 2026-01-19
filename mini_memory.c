@@ -20,9 +20,9 @@ struct malloc_element {
 };
 static struct malloc_element *liste = NULL;
 
-static void ecrire_err(const char *s, int len) {
+/*static void ecrire_err(const char *s, int len) {
     if (len > 0) write(STDERR_FILENO, s, len);
-}
+}*/
 
 /*void *mini_calloc(int size_element, int number_element) {
     if (size_element <= 0 || number_element <= 0) return NULL;

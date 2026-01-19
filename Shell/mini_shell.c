@@ -258,15 +258,42 @@ int main() {
     //  Chargement du mini_bashrc
     MYFILE *rc = mini_open("mini_bashrc", 'r');
     if (rc != NULL) {
-        char *line_rc = mini_calloc(1024, 1);
-        // On lit le fichier ligne par ligne
-        while (mini_fread(line_rc, 1 , 1024, rc) > 0) {
-            // On exécute la ligne (ex: mini_export PATH=...)
-            execute_command(line_rc);
-            // On vide le buffer pour la ligne suivante
-            mini_memset(line_rc, 0, 1024);
+        char *buffer = mini_calloc(1024, 1);
+        char *current_line = mini_calloc(1024, 1);
+        int line_pos = 0;
+        int bytes_read;
+
+        // On lit par blocs de 1024 octets
+        while ((bytes_read = mini_fread(buffer, 1, 1024, rc)) > 0) {
+            for (int i = 0; i < bytes_read; i++) {
+                if (buffer[i] == '\n') {
+                    // Fin de ligne trouvée
+                    current_line[line_pos] = '\0';
+                    
+                    if (line_pos > 0) {
+                        execute_command(current_line);
+                    }
+                    
+                    // On réinitialise pour la ligne suivante
+                    mini_memset(current_line, 0, 1024);
+                    line_pos = 0;
+                } else {
+                    // On accumule les caractères dans current_line
+                    if (line_pos < 1023) {
+                        current_line[line_pos++] = buffer[i];
+                    }
+                }
+            }
         }
-        mini_free(line_rc);
+        
+        // Gérer la dernière ligne si le fichier ne finit pas par \n
+        if (line_pos > 0) {
+            current_line[line_pos] = '\0';
+            execute_command(current_line);
+        }
+
+        mini_free(buffer);
+        mini_free(current_line);
         mini_fclose(rc);
     }
     else {
