@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include "mini_lib.h"
+#define MAX_INT_STR 32
 
 char *buffer = NULL;
 int ind = -1;
@@ -168,4 +169,15 @@ void mini_strcat(char *dest, const char *src) {
         *ptr++ = *src++;
     }
     *ptr = '\0';
+}
+
+// Convertit un entier en chaîne 
+void int_to_str(long n, char *buf) {
+    char tmp[MAX_INT_STR];
+    int i = 0, j = 0;
+    if (n == 0) { buf[j++] = '0'; buf[j] = '\0'; return; }
+    if (n < 0) { buf[j++] = '-'; n = -n; }
+    while (n > 0) { tmp[i++] = '0' + (n % 10); n /= 10; }
+    for (int k = i - 1; k >= 0; k--) buf[j++] = tmp[k];
+    buf[j] = '\0';
 }

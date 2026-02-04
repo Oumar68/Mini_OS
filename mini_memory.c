@@ -164,7 +164,7 @@ size_t free_memory(){
     struct malloc_element *cur = liste;
     size_t taille_libre = 0;
     while(cur){
-        if(!cur->statut){
+        if(cur->statut == false){
             taille_libre += cur->taille;
         }
      cur = cur->suivant;

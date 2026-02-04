@@ -11,7 +11,7 @@ int main(){
     mini_printf("Entrez quelque chose\n");
     mini_scanf((char*)tampon,5);
     mini_printf((char*)tampon);
-    mini_printf("\n");
+    //mini_printf("\n");
 
     mini_free(tampon);
 
@@ -38,11 +38,23 @@ int main(){
         mini_perror("Erreur d'allocation memoire");
         mini_exit();
     }
-    mini_scanf((char*)c,2);
-    mini_fputc(f,(*(char*)c));
+    //mini_scanf((char*)c,2);
+    //mini_fputc(f,(*(char*)c));
     mini_printf("Donnees ecrites dans le fichier :\n");
     mini_printf((char*)tampon2);
-    //mini_fflush(f);
+    mini_free(c);
     mini_free(tampon2);
+    int taille_blocs_libres = (int)free_memory();
+    int taille_buffer_libres = (int)free_buffer();
+    mini_printf("Memoire libre : ");
+    char mem[54];
+    int_to_str(taille_blocs_libres , mem);
+    mini_printf(mem);
+    mini_printf(" octets dans les blocs malloc ");
+    char mem2[54];
+    int_to_str(taille_buffer_libres , mem2);
+    mini_printf(mem2);
+    mini_printf(" octets dans les buffers\n");
+    //mini_fflush(f);
     mini_exit();
 }
